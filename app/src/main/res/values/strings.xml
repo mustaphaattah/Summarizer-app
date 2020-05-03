@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Trimmer</string>
+    <string name="title_activity_home">Home</string>
+    <string name="tile_activity_summary">Summary</string>
+    <string name="edit_text_hint">Copy Paste a documents text \n or add a text file from the bottom right button</string>
+    <string name="open_menu_option">Open summary</string>
+</resources>
