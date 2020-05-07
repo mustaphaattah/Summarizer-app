@@ -32,4 +32,4 @@ press summarize to view a summary of the upoaded or copied text
 
 | Home Screen | Summary | Save Summary | Open Summary |
 | --- | --- | --- | --- |
-| <img width="339" alt="Screen Shot 2020-05-07 at 2 44 01 PM" src="https://user-images.githubusercontent.com/17362205/81338936-6a7a5280-907b-11ea-8cae-47970a8a6f59.png"> |
+| <img width="339" alt="Screen Shot 2020-05-07 at 2 44 01 PM" src="https://user-images.githubusercontent.com/17362205/81338936-6a7a5280-907b-11ea-8cae-47970a8a6f59.png"> | <img width="341" alt="Screen Shot 2020-05-07 at 2 44 34 PM" src="https://user-images.githubusercontent.com/17362205/81339746-a82bab00-907c-11ea-93d2-0568dc6d6e6c.png"> | <img width="340" alt="Screen Shot 2020-05-07 at 2 46 18 PM" src="https://user-images.githubusercontent.com/17362205/81339786-b679c700-907c-11ea-9eac-e7b001ba8617.png"> | <img width="340" alt="Screen Shot 2020-05-07 at 2 51 34 PM" src="https://user-images.githubusercontent.com/17362205/81339802-bc6fa800-907c-11ea-802a-9002e31c30e5.png"> |
