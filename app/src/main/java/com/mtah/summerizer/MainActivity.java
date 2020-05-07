@@ -2,26 +2,35 @@ package com.mtah.summerizer;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class MainActivity extends AppCompatActivity {
-    public static final int DURATION = 500;
+import static java.lang.Thread.sleep;
 
+public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new Handler().postDelayed(new Runnable() {
+        Thread thread = new Thread(new Runnable (){
             @Override
             public void run() {
-
-                Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
-                startActivity(homeIntent);
-                finish();
+                try {
+                    sleep(1500);
+                    Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
+                    startActivity(homeIntent);
+                    finish();
+                } catch (Exception e){
+                    Log.e(TAG, "run: ", e);
+                }
             }
-        }, DURATION);
+        });
+        thread.start();
+
     }
 }

@@ -3,7 +3,6 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.mtah.summerizer">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
@@ -14,12 +13,17 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SummaryActivity"></activity>
+        <activity
+            android:name=".SummaryActivity"
+            android:label="@string/tile_activity_summary"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

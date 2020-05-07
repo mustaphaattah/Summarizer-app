@@ -3,6 +3,7 @@ package com.mtah.summerizer;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -84,7 +85,8 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
         for (int i = 0; i < summarySize; i++) {
             if (i < maxLenght) {
 
-                text.append(sentenceVertices.get(i).getSentence().trim() + " ");
+                text.append(sentenceVertices.get(i).getSentence().trim());
+                text.append(" ");
                 counter++;
             } else
                 break;
@@ -125,6 +127,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
     // intialzie database if it doesnt exist
     private void databaseInit() throws Exception{
         summaryDatabase = this.openOrCreateDatabase("Summaries", MODE_PRIVATE, null);
+        summaryDatabase.execSQL("DROP TABLE summary");
         summaryDatabase.execSQL("CREATE TABLE IF NOT EXISTS summary (name VARCHAR PRIMARY KEY, text VARCHAR)");
     }
 

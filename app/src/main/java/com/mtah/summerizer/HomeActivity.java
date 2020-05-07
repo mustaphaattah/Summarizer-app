@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class HomeActivity extends AppCompatActivity {
-    public final String TAG = "INFO";
+    private static final String TAG = "HomeActivity";
     private int STORAGE_PERMISSION_CODE = 1;
     private int FILE_REQUEST_CODE = 100;
     private EditText editTextView;
@@ -37,9 +38,10 @@ public class HomeActivity extends AppCompatActivity {
     private ArrayAdapter adapter;
     private ArrayList<String> summaryList;
     private HashMap<String, String> summaryMap;
+    private Button summaryButton;
     public static PreProcessor preProcessor;
     public static Grapher grapher;
-
+    AsyncTask<Void,Void, String> load;
 
 
     @Override
@@ -48,12 +50,17 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        try {
-            summaryInit();
-        } catch (Exception e) {
-            Log.e(TAG, "onCreate: ", e);
-        }
+
         editTextView = findViewById(R.id.editText);
+        summaryButton = findViewById(R.id.summaryButton);
+        summaryButton.setEnabled(false);
+        summaryButton.setVisibility(View.INVISIBLE);
+
+        Toast.makeText(this, "Getting summarizer ready...", Toast.LENGTH_SHORT).show();
+        if (load != null)
+            load.cancel(true);
+        load = new LoadModels();
+        load.execute();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setImageDrawable(ContextCompat.getDrawable(HomeActivity.this, R.drawable.fileplus));
@@ -84,7 +91,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button summaryButton = findViewById(R.id.summaryButton);
         summaryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,6 +119,14 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (load != null)
+            load.cancel(true);
     }
 
     private void summaryInit() throws Exception{
@@ -285,6 +299,26 @@ public class HomeActivity extends AppCompatActivity {
             AlertDialog openDialog = builder.create();
             openDialog.setView(listView, 16, 16, 16, 16);
             openDialog.show();
+        }
+    }
+
+    private class LoadModels extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                summaryInit();
+            } catch (Exception e) {
+                Toast.makeText(HomeActivity.this, "Could not load Models, please restart", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+            return "Summarizer Ready";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(HomeActivity.this, result, Toast.LENGTH_SHORT).show();
+            summaryButton.setVisibility(View.VISIBLE);
+            summaryButton.setEnabled(true);
         }
     }
 }
