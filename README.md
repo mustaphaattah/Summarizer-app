@@ -30,4 +30,6 @@ press summarize to view a summary of the upoaded or copied text
 * select open summary
 * choose from the list of your saved summaries
 
-
+| Home Screen | Summary | Save Summary | Open Summary |
+| --- | --- | --- | --- |
+| <img width="339" alt="Screen Shot 2020-05-07 at 2 44 01 PM" src="https://user-images.githubusercontent.com/17362205/81338936-6a7a5280-907b-11ea-8cae-47970a8a6f59.png"> |
