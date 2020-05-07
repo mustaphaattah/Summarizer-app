@@ -26,6 +26,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
     private String summaryText;
     private String saveSummaryName;
     public SQLiteDatabase summaryDatabase;
+    private Intent textIntent;
 
 
     @Override
@@ -49,7 +50,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
         });
 
         TextView summaryTextView = findViewById(R.id.summaryTextView);
-        Intent textIntent = getIntent();
+        textIntent = getIntent();
         if (textIntent.hasExtra("docText")) {
             documentText = textIntent.getStringExtra("docText");
             Log.i(TAG, "onCreate: DOC TEXT:" + documentText);
@@ -64,9 +65,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
             }
         } else if (textIntent.hasExtra("open")){
             summaryText = textIntent.getStringExtra("open");
-            saveSummaryButton.setEnabled(false);
         }
-
         summaryTextView.setText(summaryText);
 
     }
@@ -98,6 +97,9 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
 
     //Dialog for summary name input for saveing the sumarry
     private void openSaveDialog(){
+        if (textIntent.hasExtra("open")){
+            Toast.makeText(this, "This has already been saved", Toast.LENGTH_SHORT).show();
+        }
         SaveDialog saveDialog = new SaveDialog();
         saveDialog.show(getSupportFragmentManager(), "save dialog");
     }
@@ -127,7 +129,6 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
     // intialzie database if it doesnt exist
     private void databaseInit() throws Exception{
         summaryDatabase = this.openOrCreateDatabase("Summaries", MODE_PRIVATE, null);
-        summaryDatabase.execSQL("DROP TABLE summary");
         summaryDatabase.execSQL("CREATE TABLE IF NOT EXISTS summary (name VARCHAR PRIMARY KEY, text VARCHAR)");
     }
 

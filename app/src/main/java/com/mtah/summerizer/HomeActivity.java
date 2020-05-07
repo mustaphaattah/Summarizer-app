@@ -56,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
         summaryButton.setEnabled(false);
         summaryButton.setVisibility(View.INVISIBLE);
 
-        Toast.makeText(this, "Getting summarizer ready...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Getting summarizer ready, Please wait...", Toast.LENGTH_SHORT).show();
         if (load != null)
             load.cancel(true);
         load = new LoadModels();
