@@ -16,13 +16,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new Handler().postDelayed(new Runnable() {
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
-                startActivity(homeIntent);
-                finish();
+                try {
+                    sleep(2000);
+                    Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
+                    startActivity(homeIntent);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
-        }, 1000);
+        });
+        thread.start();
     }
 }
