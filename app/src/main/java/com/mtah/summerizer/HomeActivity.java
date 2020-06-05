@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.mtah.tools.Grapher;
 import com.mtah.tools.PreProcessor;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class HomeActivity extends AppCompatActivity {
     private ArrayList<String> summaryList;
     private HashMap<String, String> summaryMap;
     private Button summaryButton;
+    private ProgressBar progressBar;
     public static PreProcessor preProcessor;
     public static Grapher grapher;
     AsyncTask<Void,Void, String> load;
@@ -56,11 +58,7 @@ public class HomeActivity extends AppCompatActivity {
         summaryButton.setEnabled(false);
         summaryButton.setVisibility(View.INVISIBLE);
 
-        Toast.makeText(this, "Getting summarizer ready, Please wait...", Toast.LENGTH_SHORT).show();
-        if (load != null)
-            load.cancel(true);
-        load = new LoadModels();
-        load.execute();
+        progressBar = findViewById(R.id.progressBar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setImageDrawable(ContextCompat.getDrawable(HomeActivity.this, R.drawable.fileplus));
@@ -119,6 +117,11 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if (load != null)
+            load.cancel(true);
+        load = new LoadModels();
+        load.execute();
     }
 
     @Override
@@ -130,12 +133,14 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void summaryInit() throws Exception{
+
         InputStream sentInput = getAssets().open("en_sent.bin");
         InputStream tokenInput = getAssets().open("en_token.bin");
         InputStream lemmaInput = getAssets().open("en_lemmatizer.dict");
+//        ByteArrayInputStream posInput = (ByteArrayInputStream) getResources().openRawResource(R.raw.en_pos_maxent);
 
         System.setProperty("org.xml.sax.driver", "org.xmlpull.v1.sax2.Driver");
-        AssetFileDescriptor assetFileDescriptor = getApplicationContext().getAssets().openFd("en_pos_maxent.bin");
+        AssetFileDescriptor assetFileDescriptor = getResources().openRawResourceFd(R.raw.en_pos_maxent);
         FileInputStream posInput = assetFileDescriptor.createInputStream();
 
         preProcessor = new PreProcessor(sentInput, tokenInput, lemmaInput, posInput);
@@ -145,6 +150,10 @@ public class HomeActivity extends AppCompatActivity {
         tokenInput.close();
         lemmaInput.close();
         posInput.close();
+    }
+
+    private void clearText() {
+
     }
 
     //Read text form a .txt file
@@ -272,6 +281,9 @@ public class HomeActivity extends AppCompatActivity {
 
             showOpenDialog();
             return true;
+        } else if (item.getItemId() == R.id.clearEditText){
+            editTextView.getText().clear();
+            return true;
         }
         return false;
     }
@@ -308,7 +320,6 @@ public class HomeActivity extends AppCompatActivity {
             try {
                 summaryInit();
             } catch (Exception e) {
-                Toast.makeText(HomeActivity.this, "Could not load Models, please restart", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
             return "Summarizer Ready";
@@ -317,6 +328,7 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(HomeActivity.this, result, Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.INVISIBLE);
             summaryButton.setVisibility(View.VISIBLE);
             summaryButton.setEnabled(true);
         }

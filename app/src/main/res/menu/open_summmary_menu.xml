@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="@string/open_menu_option" android:id="@+id/openSummaryMenu"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="@string/clear_text_option"
+        android:id="@+id/clearEditText"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_format_clear"/>
+    <item
+        android:title="@string/open_menu_option"
+        android:id="@+id/openSummaryMenu"/>
 </menu>

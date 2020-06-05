@@ -55,8 +55,13 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
             documentText = textIntent.getStringExtra("docText");
             Log.i(TAG, "onCreate: DOC TEXT:" + documentText);
 
-            summaryText = summaryTool(documentText).replaceAll("    ", " ");
-
+            if (documentText == null || documentText.isEmpty()) {
+                Toast.makeText(this, "Not document text available", Toast.LENGTH_SHORT).show();
+                summaryTextView.setText(EMPTY_MESSAGE);
+                saveSummaryButton.setEnabled(false);
+            } else {
+                summaryText = summaryTool(documentText).replaceAll("    ", " ");
+            }
             if (summaryText == null || summaryText.isEmpty()) {
                 summaryTextView.setText(EMPTY_MESSAGE);
                 saveSummaryButton.setEnabled(false);
