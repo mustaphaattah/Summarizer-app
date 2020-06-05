@@ -11,25 +11,20 @@ import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static int TIME_OUT = 2000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Thread thread = new Thread(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                try {
-                    sleep(2000);
                     Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
                     startActivity(homeIntent);
                     finish();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
             }
-        });
-        thread.start();
+        }, TIME_OUT);
     }
 }
