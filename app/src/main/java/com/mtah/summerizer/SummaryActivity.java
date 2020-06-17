@@ -11,13 +11,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import com.mtah.summerizer.db.SummaryDBHelper;
 import com.mtah.tools.Grapher;
 import com.mtah.tools.PreProcessor;
 
 import java.util.ArrayList;
 
 public class SummaryActivity extends AppCompatActivity implements SaveDialog.SaveDialogListener {
-    public final String TAG = "INFO";
+    private static final String TAG = "SummaryActivity";
     private String documentText;
     private final String EMPTY_MESSAGE = "Summary not available";
     private PreProcessor preProcessor = HomeActivity.preProcessor;
@@ -25,6 +26,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
     private Button saveSummaryButton;
     private String summaryText;
     private String saveSummaryName;
+    private SummaryDBHelper dbHelper;
     public SQLiteDatabase summaryDatabase;
     private Intent textIntent;
 
@@ -33,11 +35,8 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_summary);
-        try {
-            databaseInit();
-        } catch (Exception e) {
-            Log.e(TAG, "onCreate: ", e);
-        }
+
+        dbHelper = new SummaryDBHelper(this);
 
         saveSummaryButton = findViewById(R.id.saveButton);
         saveSummaryButton.setEnabled(false);
@@ -100,7 +99,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
         return text.toString();
     }
 
-    //Dialog for summary name input for saveing the sumarry
+    //Dialog for summary name input for saving the sumarry
     private void openSaveDialog(){
         if (textIntent.hasExtra("open")){
             Toast.makeText(this, "This has already been saved", Toast.LENGTH_SHORT).show();
@@ -123,7 +122,7 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
                 Log.i(TAG, "onClick: Save successful");
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Log.e(TAG, "onClick: ", e);
+                Log.e(TAG, "applyText: ", e);
                 Toast.makeText(this, "Could not save summary", Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -131,21 +130,9 @@ public class SummaryActivity extends AppCompatActivity implements SaveDialog.Sav
         }
     }
 
-    // intialzie database if it doesnt exist
-    private void databaseInit() throws Exception{
-        summaryDatabase = this.openOrCreateDatabase("Summaries", MODE_PRIVATE, null);
-        summaryDatabase.execSQL("CREATE TABLE IF NOT EXISTS summary (name VARCHAR PRIMARY KEY, text VARCHAR)");
-    }
-
     //save a summary to database
     private void saveSummary (String summaryName, String summaryText) throws Exception{
-        ContentValues values = new ContentValues();
-        values.put("name", summaryName);
-        values.put("text", summaryText);
-        summaryDatabase.insert("summary", null, values);
+        dbHelper.saveSummary(summaryName, summaryText);
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
     }
-
-
-
 }

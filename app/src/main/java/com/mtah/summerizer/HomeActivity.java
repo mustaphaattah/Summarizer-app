@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,28 +19,33 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import com.mtah.summerizer.db.SummaryDBHelper;
+import com.mtah.summerizer.model.Summary;
 import com.mtah.tools.Grapher;
 import com.mtah.tools.PreProcessor;
-import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
     private int STORAGE_PERMISSION_CODE = 1;
     private int FILE_REQUEST_CODE = 100;
+
+    private ArrayAdapter adapter;
+    private ArrayList<String> summaryNameList;
+    private HashMap<String, String> summaryMap;
+
     private EditText editTextView;
     private String documentText;
     private ListView listView;
-    private ArrayAdapter adapter;
-    private ArrayList<String> summaryList;
-    private HashMap<String, String> summaryMap;
     private Button summaryButton;
     private ProgressBar progressBar;
     public static PreProcessor preProcessor;
     public static Grapher grapher;
+    private SummaryDBHelper dbHelper;
     AsyncTask<Void,Void, String> load;
 
 
@@ -59,62 +62,50 @@ public class HomeActivity extends AppCompatActivity {
         summaryButton.setVisibility(View.INVISIBLE);
 
         progressBar = findViewById(R.id.progressBar);
+        dbHelper = new SummaryDBHelper(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setImageDrawable(ContextCompat.getDrawable(HomeActivity.this, R.drawable.fileplus));
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(HomeActivity.this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                    //Open file explorer to get file
-                    Log.i(TAG, "onClick: App has storage permission");
+        fab.setOnClickListener(view -> {
+            if (ContextCompat.checkSelfPermission(HomeActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                //Open file explorer to get file
+                Log.i(TAG, "onClick: App has storage permission");
 
-                    Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                    fileIntent.setType("text/plain");
-                    startActivityForResult(fileIntent, FILE_REQUEST_CODE);
-                } else {
-                    Log.i(TAG, "onClick: Requesting Storage permission");
-                    requestStoragePermission();
-                }
+                Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                fileIntent.setType("text/plain");
+                startActivityForResult(fileIntent, FILE_REQUEST_CODE);
+            } else {
+                Log.i(TAG, "onClick: Requesting Storage permission");
+                requestStoragePermission();
             }
         });
 
         Button testButton = findViewById(R.id.testButton);
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "onClick: Read test doc");
-                editTextView.setText(readText(getApplicationContext().getResources().openRawResource(R.raw.amin)));
-            }
+        testButton.setOnClickListener(v -> {
+            Log.i(TAG, "onClick: Read test doc");
+            editTextView.setText(readText(getApplicationContext().getResources().openRawResource(R.raw.amin)));
         });
 
-        summaryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!editTextView.getText().toString().isEmpty()){
-                    Intent summaryIntent = new Intent(HomeActivity.this, SummaryActivity.class);
-                    summaryIntent.putExtra("docText", editTextView.getText().toString());
-                    startActivity(summaryIntent);
-                } else{
-                    Toast.makeText(HomeActivity.this, "Nothing to Summarize", Toast.LENGTH_SHORT).show();
-                }
+        summaryButton.setOnClickListener(v -> {
+            if (!editTextView.getText().toString().isEmpty()){
+                Intent summaryIntent = new Intent(HomeActivity.this, SummaryActivity.class);
+                summaryIntent.putExtra("docText", editTextView.getText().toString());
+                startActivity(summaryIntent);
+            } else{
+                Toast.makeText(HomeActivity.this, "Nothing to Summarize", Toast.LENGTH_SHORT).show();
             }
         });
 
         listView  = new ListView(this);
         listView.setPadding(16,16,16,16);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i(TAG, "onItemClick: Selected index "+ position);
-                String name = parent.getItemAtPosition(position).toString();
-                if (summaryMap.containsKey(name)){
-                    Intent openIntent = new Intent(HomeActivity.this, SummaryActivity.class);
-                    openIntent.putExtra("open", summaryMap.get(name));
-                    startActivity(openIntent);
-
-                }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            Log.i(TAG, "onItemClick: Selected index "+ position);
+            String name = parent.getItemAtPosition(position).toString();
+            if (summaryMap.containsKey(name)){
+                Intent openIntent = new Intent(HomeActivity.this, SummaryActivity.class);
+                openIntent.putExtra("open", summaryMap.get(name));
+                startActivity(openIntent);
             }
         });
 
@@ -152,10 +143,6 @@ public class HomeActivity extends AppCompatActivity {
         posInput.close();
     }
 
-    private void clearText() {
-
-    }
-
     //Read text form a .txt file
     public String  readText(InputStream input){
 
@@ -173,7 +160,7 @@ public class HomeActivity extends AppCompatActivity {
             reader.close();
             buffreader.close();
         } catch (IOException e) {
-            Log.i(TAG, "onClick: Exception: " + e.getMessage());;
+            Log.i(TAG, "onClick: Exception: " + e.getMessage());
         }
         return text.toString();
     }
@@ -222,7 +209,7 @@ public class HomeActivity extends AppCompatActivity {
                 String mimeType = getContentResolver().getType(data.getData());
                 String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
                 Log.i(TAG, "onActivityResult: File Extention = " + extension);
-                if (extension.equals("txt")) {
+                if (extension != null && extension.equals("txt")) {
                     try {
                         documentText = readText(getContentResolver().openInputStream(data.getData()));
                         editTextView.setText(documentText);
@@ -250,7 +237,7 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    //MENU
+    //menu with clear text and open summary
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
@@ -264,21 +251,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onOptionsItemSelected(item);
 
         if (item.getItemId() == R.id.openSummaryMenu){
-            summaryMap = new HashMap<>();
-
-            SQLiteDatabase summaryDatabase = this.openOrCreateDatabase("Summaries", MODE_PRIVATE, null);
-            Cursor cursor = summaryDatabase.rawQuery("SELECT * FROM summary", null);
-            int nameIndex = cursor.getColumnIndex("name");
-            int textIndex = cursor.getColumnIndex("text");
-            Log.i(TAG, "onOptionsItemSelected: nameindex: " + nameIndex);
-
-            while (cursor.moveToNext()) {
-                String name = cursor.getString(nameIndex);
-                summaryMap.put(name, cursor.getString(textIndex));
-                Log.i(TAG, "onOptionsItemSelected: GOT HERE getting from DB");
-            }
-            cursor.close();
-
+            getSavedSummaries();
             showOpenDialog();
             return true;
         } else if (item.getItemId() == R.id.clearEditText){
@@ -288,15 +261,26 @@ public class HomeActivity extends AppCompatActivity {
         return false;
     }
 
-    public void showOpenDialog (){
-        summaryList = new ArrayList<>(summaryMap.keySet());
-        adapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, summaryList);
+    private void getSavedSummaries () {
+        List<Summary> summaries = dbHelper.getAllSummaries();
+        summaryMap = new HashMap<>();
+        for (Summary s : summaries){
+            summaryMap.put(s.getName(), s.getText());
+        }
+    }
+
+    // display dialog with a list of all saved summaries
+    private void showOpenDialog (){
+        summaryNameList = new ArrayList<>(summaryMap.keySet());
+        adapter = new ArrayAdapter(this,
+                R.layout.support_simple_spinner_dropdown_item,
+                summaryNameList);
         listView.setPadding(8,8,8,8);
         listView.setAdapter(adapter);
 
         Log.i(TAG, "showOpenDialog: adapter notified");
 
-        if (summaryList.isEmpty()){
+        if (summaryNameList.isEmpty()){
             Toast.makeText(this, "No saved Summaries", Toast.LENGTH_SHORT).show();
         } else {
 
@@ -316,6 +300,12 @@ public class HomeActivity extends AppCompatActivity {
 
     private class LoadModels extends AsyncTask<Void, Void, String> {
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(HomeActivity.this, "Loading summary tools...", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
         protected String doInBackground(Void... voids) {
             try {
                 summaryInit();
@@ -328,7 +318,7 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(HomeActivity.this, result, Toast.LENGTH_SHORT).show();
-            progressBar.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.GONE);
             summaryButton.setVisibility(View.VISIBLE);
             summaryButton.setEnabled(true);
         }
